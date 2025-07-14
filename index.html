@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>自動接続リトライツール</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+    }
+    input, button {
+      font-size: 1.1em;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 1em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔁 自動リダイレクト</h1>
+
+  <input type="text" id="targetUrl" placeholder="例：https://ticket.jfa.jp/..." />
+  <button id="startBtn">リダイレクトスタート</button>
+  <div class="status" id="status">未開始</div>
+
+  <script>
+    const button = document.getElementById("startBtn");
+    const urlInput = document.getElementById("targetUrl");
+    const status = document.getElementById("status");
+
+    button.addEventListener("click", () => {
+      const url = urlInput.value.trim();
+      if (!/^https?:\/\//.test(url)) {
+        status.textContent = "❌ URLは http:// または https:// で始めてください";
+        return;
+      }
+
+      status.textContent = "⏳ 接続できるまでリトライします...";
+
+      const retry = setInterval(() => {
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = url + "?t=" + Date.now(); // キャッシュ回避
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+          clearInterval(retry);
+          status.textContent = "✅ ページに移動します...";
+          window.location.href = url;
+        };
+      }, 5000);
+    });
+  </script>
+</body>
+</html>
